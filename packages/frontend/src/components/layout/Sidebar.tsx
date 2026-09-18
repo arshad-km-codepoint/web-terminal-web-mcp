@@ -4,6 +4,7 @@ import {
   Database,
   Play,
   DollarSign,
+  Users,
   Terminal,
   TrendingUp,
   TrendingDown,
@@ -22,7 +23,9 @@ const navItems = [
   { path: '/datasets', label: 'Datasets', icon: Database, countKey: 'datasets' as const },
   { path: '/pipelines', label: 'Pipelines', icon: Play, countKey: 'pipelines' as const },
   { path: '/costs', label: 'Costs', icon: DollarSign },
+  { path: '/users', label: 'Users', icon: Users, countKey: 'users' as const },
 ];
+
 
 export function Sidebar({ isTerminalOpen, onToggleTerminal }: SidebarProps) {
   const location = useLocation();

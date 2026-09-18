@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CatalogData, PipelineRun, Pipeline } from '../data/types';
+import type { CatalogData, PipelineRun, Pipeline, User } from '../data/types';
 import { generateCatalogData } from '../data/generators';
 import { generateRunLogs } from '../data/generators/pipeline-runs';
 
@@ -11,6 +11,9 @@ interface CatalogStore extends CatalogData {
   updatePipelineRun: (runId: string, patch: Partial<PipelineRun>) => void;
   updatePipeline: (pipelineId: string, patch: Partial<Pipeline>) => void;
   startMockPipelineRun: (pipelineId: string, environment: string) => string;
+  addUser: (user: User) => void;
+  updateUser: (userId: string, patch: Partial<User>) => void;
+  deleteUser: (userId: string) => void;
 }
 
 export const useCatalogStore = create<CatalogStore>((set, get) => ({
@@ -21,6 +24,7 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
   pipelineRuns: [],
   qualityChecks: [],
   costs: [],
+  users: [],
   initialized: false,
 
   initialize: () => {
@@ -32,6 +36,27 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
     const data = generateCatalogData();
     set(data);
   },
+
+  addUser: (user) =>
+    set((state) => ({
+      users: [user, ...state.users],
+    })),
+
+  updateUser: (userId, patch) =>
+    set((state) => ({
+      users: state.users.map((u) =>
+        u.id === userId || u.email.toLowerCase() === userId.toLowerCase()
+          ? { ...u, ...patch }
+          : u,
+      ),
+    })),
+
+  deleteUser: (userId) =>
+    set((state) => ({
+      users: state.users.filter(
+        (u) => u.id !== userId && u.email.toLowerCase() !== userId.toLowerCase(),
+      ),
+    })),
 
   addPipelineRun: (run) =>
     set((state) => ({
@@ -51,6 +76,7 @@ export const useCatalogStore = create<CatalogStore>((set, get) => ({
         p.id === pipelineId ? { ...p, ...patch } : p,
       ),
     })),
+
 
   // Inserts a new PipelineRun with status "Running" and auto-transitions
   // it to "Success" after 8 seconds to simulate a real execution.

@@ -220,6 +220,193 @@ export const TOOLS = [
       },
     },
   },
+  {
+    name: 'create_user',
+    description:
+      'Register and provision a new user in the Happy Coffee data portal. Automatically navigates to the user directory.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        fullName: { type: 'string', description: 'Full legal name of the user.' },
+        email: { type: 'string', description: 'Corporate email ending with @happycoffee.io.' },
+        role: {
+          type: 'string',
+          enum: [
+            'Data Platform Admin',
+            'Data Steward',
+            'Data Engineer',
+            'Data Analyst',
+            'ML Engineer',
+            'Security & Compliance Officer',
+          ],
+          description: 'Role-based access authorization.',
+        },
+        department: {
+          type: 'string',
+          enum: [
+            'Data Platform & Infrastructure',
+            'Analytics & Business Intelligence',
+            'Supply Chain & Sourcing',
+            'Roastery Operations & Quality',
+            'Finance & Commodity Trading',
+            'Governance & Security',
+          ],
+          description: 'Assigned business department.',
+        },
+        jobTitle: { type: 'string', description: 'Official corporate title.' },
+        officeLocation: { type: 'string', description: 'Hub or office city.' },
+        clearanceLevel: {
+          type: 'string',
+          enum: ['Public', 'Bronze (Raw)', 'Silver (Cleaned)', 'Gold (Aggregated)', 'Restricted / PII'],
+          description: 'Data tier clearance.',
+        },
+        accessibleEnvironments: {
+          type: 'array',
+          items: { type: 'string', enum: ['Development', 'Staging', 'Production'] },
+          description: 'Accessible cluster environments.',
+        },
+        status: {
+          type: 'string',
+          enum: ['Active', 'Pending Review', 'Suspended'],
+          description: 'Initial account status.',
+        },
+        mfaMethod: {
+          type: 'string',
+          enum: ['Hardware Key (FIDO2)', 'TOTP', 'SMS OTP', 'None'],
+          description: 'Configured MFA security method.',
+        },
+      },
+      required: ['fullName', 'email', 'role', 'department'],
+    },
+  },
+  {
+    name: 'update_user',
+    description:
+      'Update profile, clearance level, role, department, or status for an existing user.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'User ID (e.g. usr-101) or email address.' },
+        patch: {
+          type: 'object',
+          properties: {
+            fullName: { type: 'string' },
+            email: { type: 'string' },
+            role: {
+              type: 'string',
+              enum: [
+                'Data Platform Admin',
+                'Data Steward',
+                'Data Engineer',
+                'Data Analyst',
+                'ML Engineer',
+                'Security & Compliance Officer',
+              ],
+            },
+            department: {
+              type: 'string',
+              enum: [
+                'Data Platform & Infrastructure',
+                'Analytics & Business Intelligence',
+                'Supply Chain & Sourcing',
+                'Roastery Operations & Quality',
+                'Finance & Commodity Trading',
+                'Governance & Security',
+              ],
+            },
+            jobTitle: { type: 'string' },
+            officeLocation: { type: 'string' },
+            clearanceLevel: {
+              type: 'string',
+              enum: ['Public', 'Bronze (Raw)', 'Silver (Cleaned)', 'Gold (Aggregated)', 'Restricted / PII'],
+            },
+            status: {
+              type: 'string',
+              enum: ['Active', 'Pending Review', 'Suspended', 'Offboarded'],
+            },
+            accessibleEnvironments: {
+              type: 'array',
+              items: { type: 'string', enum: ['Development', 'Staging', 'Production'] },
+            },
+          },
+        },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'filter_users',
+    description:
+      'Filter and list data portal users by query, role, department, clearance level, or status. Navigates the portal to the users view.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search string for user name, email, username, or job title.',
+        },
+        role: {
+          type: 'string',
+          enum: [
+            'Data Platform Admin',
+            'Data Steward',
+            'Data Engineer',
+            'Data Analyst',
+            'ML Engineer',
+            'Security & Compliance Officer',
+          ],
+        },
+        department: {
+          type: 'string',
+          enum: [
+            'Data Platform & Infrastructure',
+            'Analytics & Business Intelligence',
+            'Supply Chain & Sourcing',
+            'Roastery Operations & Quality',
+            'Finance & Commodity Trading',
+            'Governance & Security',
+          ],
+        },
+        clearanceLevel: {
+          type: 'string',
+          enum: ['Public', 'Bronze (Raw)', 'Silver (Cleaned)', 'Gold (Aggregated)', 'Restricted / PII'],
+        },
+        status: {
+          type: 'string',
+          enum: ['Active', 'Pending Review', 'Suspended'],
+        },
+        page: { type: 'number' },
+      },
+    },
+  },
+  {
+    name: 'get_user_details',
+    description:
+      'Fetch full profile, compliance status, and permissions for a user. Optionally opens the registration edit form.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'User ID (e.g. usr-101) or email address.' },
+        openEditForm: {
+          type: 'boolean',
+          description: 'Whether to open the edit form modal in the browser.',
+        },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'delete_user',
+    description:
+      'Deactivate and remove a user from the active portal directory.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'User ID or email address.' },
+      },
+      required: ['id'],
+    },
+  },
 ];
 
 // ------------------------------------------------------------------

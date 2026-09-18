@@ -26,6 +26,7 @@ describe('Sidebar', () => {
     expect(screen.getByText('Datasets')).toBeInTheDocument();
     expect(screen.getByText('Pipelines')).toBeInTheDocument();
     expect(screen.getByText('Costs')).toBeInTheDocument();
+    expect(screen.getByText('Users')).toBeInTheDocument();
   });
 
   it('renders the terminal toggle button', () => {

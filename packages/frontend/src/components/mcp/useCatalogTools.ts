@@ -1,6 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useCatalogData } from '../../hooks/useCatalogData';
 import { useCatalogStore } from '../../store/catalog-store';
+import type {
+  User,
+  UserRole,
+  UserDepartment,
+  UserStatus,
+  DataClearanceLevel,
+  EnvironmentAccess,
+} from '../../data/types';
 
 // ------------------------------------------------------------------
 // Shared tool execution logic consumed by both WebMCPIntegration
@@ -15,8 +23,10 @@ function text(str: string): ToolResult {
 
 export function useCatalogTools() {
   const navigate = useNavigate();
-  const { datasets, pipelines, pipelineRuns, costs } = useCatalogData();
+  const { datasets, pipelines, pipelineRuns, costs, users = [], addUser, updateUser, deleteUser } =
+    useCatalogData();
   const startMockPipelineRun = useCatalogStore((s) => s.startMockPipelineRun);
+
 
   const executeTool = async (
     name: string,
@@ -474,6 +484,189 @@ export function useCatalogTools() {
       }
 
       // ----------------------------------------------------------------
+      case 'create_user': {
+        const a = args as {
+          fullName: string;
+          email: string;
+          role: UserRole;
+          department: UserDepartment;
+          jobTitle?: string;
+          officeLocation?: string;
+          clearanceLevel?: DataClearanceLevel;
+          accessibleEnvironments?: EnvironmentAccess[];
+          status?: UserStatus;
+          mfaMethod?: 'Hardware Key (FIDO2)' | 'TOTP' | 'SMS OTP' | 'None';
+        };
+        const id = `usr-${Date.now().toString().slice(-4)}`;
+        const username = a.email
+          ? a.email.split('@')[0]
+          : a.fullName.toLowerCase().replace(/[^a-z0-9]/g, '.');
+        const newUser: User = {
+          id,
+          username,
+          fullName: a.fullName,
+          email: a.email,
+          jobTitle: a.jobTitle || a.role,
+          role: a.role,
+          department: a.department,
+          officeLocation: a.officeLocation || 'Seattle Roastery HQ',
+          status: a.status || 'Active',
+          clearanceLevel: a.clearanceLevel || 'Silver (Cleaned)',
+          accessibleEnvironments: a.accessibleEnvironments || ['Development', 'Staging'],
+          authorizedWarehouses: ['Snowflake Analytics'],
+          preferences: {
+            theme: 'dark',
+            emailAlerts: true,
+            slackAlerts: true,
+            pagerDutyAlerts: false,
+            weeklySpendDigest: true,
+            dataQualityIncidentAlerts: true,
+            timezone: 'America/Los_Angeles',
+          },
+          compliance: {
+            ndaSigned: true,
+            piiDataHandlingCertified: true,
+            soc2Acknowledged: true,
+            mfaMethod: a.mfaMethod || 'Hardware Key (FIDO2)',
+          },
+          createdAt: new Date(),
+          lastActiveAt: new Date(),
+        };
+
+        addUser(newUser);
+        navigate(`/users?userId=${newUser.id}`);
+        return text(
+          `Successfully registered and provisioned user "${newUser.fullName}" (${newUser.id}).\n` +
+            `Role: ${newUser.role} | Department: ${newUser.department} | Clearance: ${newUser.clearanceLevel}\n` +
+            `Navigated portal to the user profile.`,
+        );
+      }
+
+      // ----------------------------------------------------------------
+      case 'update_user': {
+        const { id, patch = {} } = args as { id: string; patch?: Partial<User> };
+        const user = users.find(
+          (u) => u.id === id || u.email.toLowerCase() === id.toLowerCase(),
+        );
+        if (!user) {
+          return text(`User "${id}" not found in portal directory.`);
+        }
+        updateUser(user.id, patch);
+        navigate(`/users?userId=${user.id}`);
+        return text(
+          `Successfully updated user "${user.fullName}" (${user.id}).\n` +
+            `Applied updates:\n${JSON.stringify(patch, null, 2)}`,
+        );
+      }
+
+      // ----------------------------------------------------------------
+      case 'filter_users': {
+        const a = args as {
+          query?: string;
+          role?: string;
+          department?: string;
+          clearanceLevel?: string;
+          status?: string;
+          page?: number;
+        };
+        const params = new URLSearchParams();
+        let filtered = users;
+
+        if (a.query) {
+          params.set('q', a.query);
+          const q = a.query.toLowerCase();
+          filtered = filtered.filter(
+            (u) =>
+              u.fullName.toLowerCase().includes(q) ||
+              u.email.toLowerCase().includes(q) ||
+              u.username.toLowerCase().includes(q) ||
+              u.jobTitle.toLowerCase().includes(q),
+          );
+        }
+        if (a.role) {
+          params.set('role', a.role);
+          filtered = filtered.filter((u) => u.role === a.role);
+        }
+        if (a.department) {
+          params.set('department', a.department);
+          filtered = filtered.filter((u) => u.department === a.department);
+        }
+        if (a.clearanceLevel) {
+          params.set('clearance', a.clearanceLevel);
+          filtered = filtered.filter((u) => u.clearanceLevel === a.clearanceLevel);
+        }
+        if (a.status) {
+          params.set('status', a.status);
+          filtered = filtered.filter((u) => u.status === a.status);
+        }
+        if (a.page) {
+          params.set('page', String(a.page));
+        }
+
+        navigate(`/users${params.toString() ? '?' + params.toString() : ''}`);
+        const summary = filtered.map((u) => ({
+          id: u.id,
+          name: u.fullName,
+          email: u.email,
+          role: u.role,
+          department: u.department,
+          status: u.status,
+          clearance: u.clearanceLevel,
+        }));
+
+        let msg =
+          `Navigated to Users Directory with filters: ${params.toString() || 'none'}.\n` +
+          `Found ${summary.length} users. Results (up to 10): ${JSON.stringify(
+            summary.slice(0, 10),
+            null,
+            2,
+          )}`;
+        if (summary.length === 0) {
+          msg += '\n\nNo matching users found in the portal directory.';
+        }
+        return text(msg);
+      }
+
+      // ----------------------------------------------------------------
+      case 'get_user_details': {
+        const { id, openEditForm } = args as { id: string; openEditForm?: boolean };
+        const user = users.find(
+          (u) => u.id === id || u.email.toLowerCase() === id.toLowerCase(),
+        );
+        if (!user) {
+          return text(`User "${id}" not found in portal directory.`);
+        }
+        if (openEditForm) {
+          navigate(`/users?action=edit&userId=${user.id}`);
+        } else {
+          navigate(`/users?userId=${user.id}`);
+        }
+        return text(
+          `User Profile Context for ${user.fullName} (${user.id}):\n${JSON.stringify(
+            user,
+            null,
+            2,
+          )}`,
+        );
+      }
+
+      // ----------------------------------------------------------------
+      case 'delete_user': {
+        const { id } = args as { id: string };
+        const user = users.find(
+          (u) => u.id === id || u.email.toLowerCase() === id.toLowerCase(),
+        );
+        if (!user) {
+          return text(`User "${id}" not found in portal directory.`);
+        }
+        deleteUser(user.id);
+        navigate('/users');
+        return text(
+          `Deactivated and removed user "${user.fullName}" (${user.id}) from the directory.`,
+        );
+      }
+
+      // ----------------------------------------------------------------
       default:
         return text(`Unknown tool: ${name}`);
     }
@@ -481,3 +674,4 @@ export function useCatalogTools() {
 
   return { executeTool };
 }
+

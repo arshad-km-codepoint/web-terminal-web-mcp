@@ -176,6 +176,11 @@ describe('handleMCPMessage', () => {
     expect(names).toContain('search_global_catalog');
     expect(names).toContain('trigger_pipeline_execution');
     expect(names).toContain('analyze_infrastructure_costs');
+    expect(names).toContain('create_user');
+    expect(names).toContain('update_user');
+    expect(names).toContain('filter_users');
+    expect(names).toContain('get_user_details');
+    expect(names).toContain('delete_user');
     expect(payload.id).toBe(2);
   });
 

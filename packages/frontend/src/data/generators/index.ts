@@ -4,6 +4,7 @@ import { generatePipelines, generatePipelineRuns } from './pipeline-runs';
 import { generateLineage } from './lineage';
 import { generateQualityChecks } from './quality-checks';
 import { generateCosts } from './costs';
+import { generateUsers } from './users';
 import type { CatalogData } from '../types';
 
 function ensureAllDatasetsHavePipelines(
@@ -35,6 +36,8 @@ export function generateCatalogData(): CatalogData {
   const lineage = generateLineage(datasetIds);
   const qualityChecks = generateQualityChecks(100, datasets);
   const costs = generateCosts(80, datasets, pipelines, dataSources);
+  const users = generateUsers();
 
-  return { datasets, dataSources, lineage, pipelines, pipelineRuns, qualityChecks, costs };
+  return { datasets, dataSources, lineage, pipelines, pipelineRuns, qualityChecks, costs, users };
 }
+

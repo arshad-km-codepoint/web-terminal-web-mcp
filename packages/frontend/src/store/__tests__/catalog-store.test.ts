@@ -11,6 +11,7 @@ function resetStore() {
     pipelineRuns: [],
     qualityChecks: [],
     costs: [],
+    users: [],
     initialized: false,
   });
 }
@@ -25,6 +26,7 @@ describe('useCatalogStore', () => {
     expect(state.initialized).toBe(false);
     expect(state.datasets).toHaveLength(0);
     expect(state.pipelines).toHaveLength(0);
+    expect(state.users).toHaveLength(0);
   });
 
   it('initialize() populates all collections', () => {
@@ -38,7 +40,9 @@ describe('useCatalogStore', () => {
     expect(state.pipelineRuns.length).toBeGreaterThan(0);
     expect(state.qualityChecks.length).toBeGreaterThan(0);
     expect(state.costs.length).toBeGreaterThan(0);
+    expect(state.users.length).toBeGreaterThan(0);
   });
+
 
   it('regenerate() replaces data with new data', () => {
     useCatalogStore.getState().initialize();
@@ -73,4 +77,48 @@ describe('useCatalogStore', () => {
     const updated = useCatalogStore.getState().pipelines.find((p) => p.id === target.id);
     expect(updated?.lastRunStatus).toBe('Failed');
   });
+
+  it('addUser() adds a new user to the state', () => {
+    useCatalogStore.getState().initialize();
+    const countBefore = useCatalogStore.getState().users.length;
+    const testUser = {
+      id: 'usr-new',
+      fullName: 'Test User',
+      email: 'test@happycoffee.io',
+      role: 'Data Engineer' as const,
+      department: 'Data Platform & Infrastructure' as const,
+      status: 'Active' as const,
+      clearanceLevel: 'Silver (Cleaned)' as const,
+      accessibleEnvironments: ['Development' as const],
+      authorizedWarehouses: ['Snowflake Analytics'],
+      preferences: {} as any,
+      compliance: {} as any,
+      createdAt: new Date(),
+      lastActiveAt: new Date(),
+      jobTitle: 'Data Engineer',
+      officeLocation: 'Seattle Roastery HQ',
+      username: 'test.user',
+    };
+    useCatalogStore.getState().addUser(testUser);
+    const state = useCatalogStore.getState();
+    expect(state.users).toHaveLength(countBefore + 1);
+    expect(state.users[0].id).toBe('usr-new');
+  });
+
+  it('updateUser() patches an existing user', () => {
+    useCatalogStore.getState().initialize();
+    const target = useCatalogStore.getState().users[0];
+    useCatalogStore.getState().updateUser(target.id, { jobTitle: 'Chief Coffee Architect' });
+    const updated = useCatalogStore.getState().users.find((u) => u.id === target.id);
+    expect(updated?.jobTitle).toBe('Chief Coffee Architect');
+  });
+
+  it('deleteUser() removes the user from the state', () => {
+    useCatalogStore.getState().initialize();
+    const target = useCatalogStore.getState().users[0];
+    useCatalogStore.getState().deleteUser(target.id);
+    const exists = useCatalogStore.getState().users.some((u) => u.id === target.id);
+    expect(exists).toBe(false);
+  });
 });
+

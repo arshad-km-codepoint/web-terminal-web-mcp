@@ -25,6 +25,8 @@ interface Message {
 }
 
 const SUGGESTIONS = [
+  '👤 Register a new Data Engineer named Carlos Gomez',
+  '👥 Show all registered platform users',
   '🔍 Search for "Customer Orders V2" datasets',
   '☕ What are our lowest quality datasets?',
   '🔄 Show pipelines with recent SLA warnings',
@@ -103,8 +105,14 @@ export function Chatbot() {
         return;
       }
 
-      // Top level pages: e.g. "navigate to pipelines", "go to datasets", "open costs"
-      const pageMatch = lower.match(/(?:navigate|go|switch|open|view)(?: to)?(?: the)? (pipelines|datasets|costs|home)/i);
+      // Registration modal triggers: e.g. "create user", "register new user", "create a user", "add user"
+      if (lower.match(/(?:create|register|add|provision)(?: a| new)? user/i)) {
+        navigate('/users?action=register');
+        return;
+      }
+
+      // Top level pages: e.g. "navigate to pipelines", "go to datasets", "open costs", "open users"
+      const pageMatch = lower.match(/(?:navigate|go|switch|open|view)(?: to)?(?: the)? (pipelines|datasets|costs|users|home)/i);
       if (pageMatch) {
         const page = pageMatch[1];
         navigate(page === 'home' ? '/' : `/${page}`);
@@ -206,11 +214,39 @@ export function Chatbot() {
             navigate('/costs');
             break;
           }
+          case 'create_user':
+          case 'update_user':
+          case 'get_user_details': {
+            const uId = args.id || args.userId;
+            if (args.openEditForm) {
+              navigate(`/users?action=edit${uId ? `&userId=${encodeURIComponent(uId)}` : ''}`);
+            } else if (uId) {
+              navigate(`/users?userId=${encodeURIComponent(uId)}`);
+            } else {
+              navigate('/users');
+            }
+            break;
+          }
+          case 'filter_users': {
+            const params = new URLSearchParams();
+            if (args.query) params.set('q', args.query);
+            if (args.role) params.set('role', args.role);
+            if (args.department) params.set('department', args.department);
+            if (args.clearanceLevel) params.set('clearance', args.clearanceLevel);
+            if (args.status) params.set('status', args.status);
+            if (args.page) params.set('page', String(args.page));
+            navigate(`/users${params.toString() ? '?' + params.toString() : ''}`);
+            break;
+          }
+          case 'delete_user': {
+            navigate('/users');
+            break;
+          }
         }
       };
 
       const checkAndTriggerNavigation = (text: string) => {
-        const toolRegex = /(view_home_dashboard|search_global_catalog|filter_datasets|view_dataset_details|filter_pipelines|view_pipeline_details|trigger_pipeline_execution|view_pipeline_run_logs|analyze_infrastructure_costs|navigate_to_home)\s*\(\s*(\{[\s\S]*?\}|)\s*\)/g;
+        const toolRegex = /(view_home_dashboard|search_global_catalog|filter_datasets|view_dataset_details|filter_pipelines|view_pipeline_details|trigger_pipeline_execution|view_pipeline_run_logs|analyze_infrastructure_costs|navigate_to_home|create_user|update_user|filter_users|get_user_details|delete_user)\s*\(\s*(\{[\s\S]*?\}|)\s*\)/g;
         let match;
         while ((match = toolRegex.exec(text)) !== null) {
           const [fullMatch, toolName, argsRaw] = match;

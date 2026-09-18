@@ -18,9 +18,14 @@ export function useCatalogData() {
     pipelineRuns: store.pipelineRuns,
     qualityChecks: store.qualityChecks,
     costs: store.costs,
+    users: store.users,
     regenerate: store.regenerate,
     addPipelineRun: store.addPipelineRun,
     updatePipelineRun: store.updatePipelineRun,
     updatePipeline: store.updatePipeline,
+    addUser: store.addUser,
+    updateUser: store.updateUser,
+    deleteUser: store.deleteUser,
   };
 }
+

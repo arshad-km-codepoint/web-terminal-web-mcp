@@ -9,6 +9,7 @@ import { Pipelines } from './components/catalog/Pipelines';
 import { PipelineDetail } from './components/catalog/PipelineDetail';
 import { Costs } from './components/catalog/Costs';
 import { SearchResults } from './components/catalog/SearchResults';
+import { UsersPage } from './components/users/UsersPage';
 import { WebMCPIntegration } from './components/mcp/WebMCPIntegration';
 import { MCPBridgeClient } from './components/mcp/MCPBridgeClient';
 import { Chatbot } from './components/chat/Chatbot';
@@ -45,6 +46,7 @@ function App() {
             <Route path="/pipelines" element={<Pipelines />} />
             <Route path="/pipelines/:id" element={<PipelineDetail />} />
             <Route path="/costs" element={<Costs />} />
+            <Route path="/users" element={<UsersPage />} />
           </Routes>
         </ContentShell>
         <Chatbot />
@@ -52,5 +54,6 @@ function App() {
     </BrowserRouter>
   );
 }
+
 
 export default App;

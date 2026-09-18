@@ -264,6 +264,196 @@ export function WebMCPIntegration() {
           execute: (args: Record<string, unknown>) =>
             executeToolRef.current('analyze_infrastructure_costs', args),
         },
+        {
+          name: 'create_user',
+          readOnlyHint: false,
+          description:
+            'Register and provision a new user in the Happy Coffee data portal. Automatically navigates to the user directory.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              fullName: { type: 'string', description: 'Full legal name.' },
+              email: { type: 'string', description: 'Corporate email ending with @happycoffee.io.' },
+              role: {
+                type: 'string',
+                enum: [
+                  'Data Platform Admin',
+                  'Data Steward',
+                  'Data Engineer',
+                  'Data Analyst',
+                  'ML Engineer',
+                  'Security & Compliance Officer',
+                ],
+              },
+              department: {
+                type: 'string',
+                enum: [
+                  'Data Platform & Infrastructure',
+                  'Analytics & Business Intelligence',
+                  'Supply Chain & Sourcing',
+                  'Roastery Operations & Quality',
+                  'Finance & Commodity Trading',
+                  'Governance & Security',
+                ],
+              },
+              jobTitle: { type: 'string' },
+              officeLocation: { type: 'string' },
+              clearanceLevel: {
+                type: 'string',
+                enum: ['Public', 'Bronze (Raw)', 'Silver (Cleaned)', 'Gold (Aggregated)', 'Restricted / PII'],
+              },
+              accessibleEnvironments: {
+                type: 'array',
+                items: { type: 'string', enum: ['Development', 'Staging', 'Production'] },
+              },
+              status: {
+                type: 'string',
+                enum: ['Active', 'Pending Review', 'Suspended'],
+              },
+              mfaMethod: {
+                type: 'string',
+                enum: ['Hardware Key (FIDO2)', 'TOTP', 'SMS OTP', 'None'],
+              },
+            },
+            required: ['fullName', 'email', 'role', 'department'],
+          },
+          execute: (args: Record<string, unknown>) =>
+            executeToolRef.current('create_user', args),
+        },
+        {
+          name: 'update_user',
+          readOnlyHint: false,
+          description:
+            'Update profile, clearance level, role, department, or status for an existing user.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', description: 'User ID or email address.' },
+              patch: {
+                type: 'object',
+                properties: {
+                  fullName: { type: 'string' },
+                  email: { type: 'string' },
+                  role: {
+                    type: 'string',
+                    enum: [
+                      'Data Platform Admin',
+                      'Data Steward',
+                      'Data Engineer',
+                      'Data Analyst',
+                      'ML Engineer',
+                      'Security & Compliance Officer',
+                    ],
+                  },
+                  department: {
+                    type: 'string',
+                    enum: [
+                      'Data Platform & Infrastructure',
+                      'Analytics & Business Intelligence',
+                      'Supply Chain & Sourcing',
+                      'Roastery Operations & Quality',
+                      'Finance & Commodity Trading',
+                      'Governance & Security',
+                    ],
+                  },
+                  jobTitle: { type: 'string' },
+                  officeLocation: { type: 'string' },
+                  clearanceLevel: {
+                    type: 'string',
+                    enum: ['Public', 'Bronze (Raw)', 'Silver (Cleaned)', 'Gold (Aggregated)', 'Restricted / PII'],
+                  },
+                  status: {
+                    type: 'string',
+                    enum: ['Active', 'Pending Review', 'Suspended', 'Offboarded'],
+                  },
+                  accessibleEnvironments: {
+                    type: 'array',
+                    items: { type: 'string', enum: ['Development', 'Staging', 'Production'] },
+                  },
+                },
+              },
+            },
+            required: ['id'],
+          },
+          execute: (args: Record<string, unknown>) =>
+            executeToolRef.current('update_user', args),
+        },
+        {
+          name: 'filter_users',
+          readOnlyHint: true,
+          description:
+            'Filter and list data portal users by query, role, department, clearance level, or status. Navigates the portal to the users view.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              query: { type: 'string', description: 'Search term for name, email, or role.' },
+              role: {
+                type: 'string',
+                enum: [
+                  'Data Platform Admin',
+                  'Data Steward',
+                  'Data Engineer',
+                  'Data Analyst',
+                  'ML Engineer',
+                  'Security & Compliance Officer',
+                ],
+              },
+              department: {
+                type: 'string',
+                enum: [
+                  'Data Platform & Infrastructure',
+                  'Analytics & Business Intelligence',
+                  'Supply Chain & Sourcing',
+                  'Roastery Operations & Quality',
+                  'Finance & Commodity Trading',
+                  'Governance & Security',
+                ],
+              },
+              clearanceLevel: {
+                type: 'string',
+                enum: ['Public', 'Bronze (Raw)', 'Silver (Cleaned)', 'Gold (Aggregated)', 'Restricted / PII'],
+              },
+              status: {
+                type: 'string',
+                enum: ['Active', 'Pending Review', 'Suspended'],
+              },
+              page: { type: 'number' },
+            },
+          },
+          execute: (args: Record<string, unknown>) =>
+            executeToolRef.current('filter_users', args),
+        },
+        {
+          name: 'get_user_details',
+          readOnlyHint: true,
+          description:
+            'Fetch full profile, compliance status, and permissions for a user. Optionally opens the registration edit form.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', description: 'User ID or email.' },
+              openEditForm: { type: 'boolean' },
+            },
+            required: ['id'],
+          },
+          execute: (args: Record<string, unknown>) =>
+            executeToolRef.current('get_user_details', args),
+        },
+        {
+          name: 'delete_user',
+          readOnlyHint: false,
+          description:
+            'Deactivate and remove a user from the active portal directory.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', description: 'User ID or email address.' },
+            },
+            required: ['id'],
+          },
+          execute: (args: Record<string, unknown>) =>
+            executeToolRef.current('delete_user', args),
+        },
     ];
 
     void Promise.all(

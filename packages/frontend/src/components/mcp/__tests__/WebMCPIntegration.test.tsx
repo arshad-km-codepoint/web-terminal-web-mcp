@@ -25,11 +25,19 @@ describe('WebMCPIntegration', () => {
         mockNavigate = vi.fn();
         (useNavigate as any).mockReturnValue(mockNavigate);
 
+        const mockAddUser = vi.fn();
+        const mockUpdateUser = vi.fn();
+        const mockDeleteUser = vi.fn();
+
         (useCatalogData as any).mockReturnValue({
             datasets: [{ id: 'ds-1', name: 'mock_dataset', displayName: 'Mock Dataset', type: 'dbt', owner: 'Test', schema: { fields: [] }, sampleData: [], qualityScore: 90 }],
             pipelines: [{ id: 'p-1', name: 'mock_pipeline', displayName: 'Mock Pipeline', inputDatasets: [], outputDatasets: ['ds-1'] }],
             pipelineRuns: [{ pipelineId: 'p-1', id: 'run-1', logs: [{ message: 'Test Log' }] }],
             costs: [{ id: 'c-1', category: 'Compute', subcategory: 'Snowflake Warehouse Credits', entityType: 'Pipeline', entityId: 'p-1', amount: 150.50, currency: 'USD', date: new Date().toISOString(), description: 'Compute cost' }],
+            users: [{ id: 'usr-1', fullName: 'Elena Rostova', email: 'elena@happycoffee.io', role: 'Data Platform Admin', department: 'Data Platform & Infrastructure', status: 'Active', clearanceLevel: 'Restricted / PII', accessibleEnvironments: ['Production'], authorizedWarehouses: ['Snowflake Analytics'], preferences: {}, compliance: {}, createdAt: new Date(), lastActiveAt: new Date() }],
+            addUser: mockAddUser,
+            updateUser: mockUpdateUser,
+            deleteUser: mockDeleteUser,
         });
 
         modelContextMock = {
@@ -57,19 +65,24 @@ describe('WebMCPIntegration', () => {
         consoleSpy.mockRestore();
     });
 
-    it('registers 9 tools when mounted', () => {
+    it('registers 14 tools when mounted', () => {
         render(
             <MemoryRouter>
                 <WebMCPIntegration />
             </MemoryRouter>
         );
 
-        expect(modelContextMock.registerTool).toHaveBeenCalledTimes(9);
+        expect(modelContextMock.registerTool).toHaveBeenCalledTimes(14);
         expect(modelContextMock.registerTool.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
         const triggerTool = modelContextMock.registerTool.mock.calls
             .map(([tool]: [any]) => tool)
             .find((tool: any) => tool.name === 'trigger_pipeline_execution');
         expect(triggerTool.annotations.readOnlyHint).toBe(false);
+
+        const createUserTool = modelContextMock.registerTool.mock.calls
+            .map(([tool]: [any]) => tool)
+            .find((tool: any) => tool.name === 'create_user');
+        expect(createUserTool.annotations.readOnlyHint).toBe(false);
     });
 
     describe('Tool Execution', () => {
@@ -137,6 +150,43 @@ describe('WebMCPIntegration', () => {
             expect(mockNavigate).toHaveBeenCalledWith('/costs?range=30&q=compute');
             expect(result).toContain('150.50');
             expect(result).toContain('Snowflake');
+        });
+
+        it('create_user executes and navigates to users profile', async () => {
+            const tool = getTool('create_user');
+            const result = await tool.execute({
+                fullName: 'Amara Tadesse',
+                email: 'amara@happycoffee.io',
+                role: 'Data Steward',
+                department: 'Supply Chain & Sourcing',
+            });
+
+            expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/users?userId=usr-'));
+            expect(result).toContain('Amara Tadesse');
+        });
+
+        it('filter_users pushes search params and navigates', async () => {
+            const tool = getTool('filter_users');
+            const result = await tool.execute({ query: 'elena', role: 'Data Platform Admin' });
+
+            expect(mockNavigate).toHaveBeenCalledWith('/users?q=elena&role=Data+Platform+Admin');
+            expect(result).toContain('Elena Rostova');
+        });
+
+        it('get_user_details retrieves user profile context', async () => {
+            const tool = getTool('get_user_details');
+            const result = await tool.execute({ id: 'usr-1' });
+
+            expect(mockNavigate).toHaveBeenCalledWith('/users?userId=usr-1');
+            expect(result).toContain('Elena Rostova');
+        });
+
+        it('delete_user navigates and deletes user', async () => {
+            const tool = getTool('delete_user');
+            const result = await tool.execute({ id: 'usr-1' });
+
+            expect(mockNavigate).toHaveBeenCalledWith('/users');
+            expect(result).toContain('Deactivated and removed user');
         });
     });
 });

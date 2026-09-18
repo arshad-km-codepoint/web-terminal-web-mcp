@@ -16,6 +16,11 @@ You have access to live data-portal tools to navigate and query the catalog in r
 - trigger_pipeline_execution: Trigger a pipeline execution on staging or production.
 - analyze_infrastructure_costs: Analyze compute, storage, and cloud spending.
 - view_home_dashboard: Open and view top assets on the home dashboard.
+- create_user: Register and provision a new platform user with roles, departments, and clearance.
+- update_user: Update profile, clearance tier, department, or status for an existing user.
+- filter_users: Search and filter members in the user directory by role, clearance, and status.
+- get_user_details: Retrieve full profile, permissions, and compliance info for a user.
+- delete_user: Deactivate a user from the directory.
 
 When a user asks you to inspect or run a pipeline (e.g. "Run the X pipeline on staging and check if it succeeds"):
 1. First find the pipeline using filter_pipelines or search_global_catalog to get its pipelineId.
@@ -38,7 +43,13 @@ export interface ChatRequest {
 export function* getLocalCatalogResponse(lastQuery: string): Generator<string, void, unknown> {
   const q = lastQuery.toLowerCase();
 
-  if (q.includes('quality') || q.includes('score')) {
+  if (q.includes('user') || q.includes('member') || q.includes('register') || q.includes('access') || q.includes('clearance')) {
+    yield `### 👥 Users & Access Directory (Happy Coffee)\n\n`;
+    yield `- **Platform Members:** 12 registered data professionals across global roasteries & hubs\n`;
+    yield `- **Clearance Breakdown:** Gold & Restricted PII tiers enforced with Hardware MFA (FIDO2)\n`;
+    yield `- **Key Roles:** Data Engineers, Data Analysts, ML Sensory Scientists, and Compliance Stewards\n\n`;
+    yield `You can navigate to the **Users** tab to view credentials, filter permissions, or register new team members.`;
+  } else if (q.includes('quality') || q.includes('score')) {
     yield `### ☕ Data Quality Summary (Happy Coffee)\n\n`;
     yield `- **Average Catalog Quality:** 78.8 / 100\n`;
     yield `- **Highest Quality:** *Roasting Profiles* (Score: 98, Tier: Bronze) & *Lab Analysis* (Score: 98)\n`;
@@ -60,8 +71,9 @@ export function* getLocalCatalogResponse(lastQuery: string): Generator<string, v
     yield `Filter trends by date and warehouse tier under the **Costs** section.`;
   } else {
     yield `Hello! I am your **Happy Coffee Data Catalog Copilot**, powered by **DeepSeek**.\n\n`;
-    yield `I can help you navigate datasets, investigate pipeline run logs, check data quality scores, and inspect cloud compute costs.\n\n`;
+    yield `I can help you navigate datasets, investigate pipeline run logs, check data quality scores, manage platform user accounts, and inspect cloud compute costs.\n\n`;
     yield `**Try asking:**\n`;
+    yield `- *"Show me all registered platform users"*\n`;
     yield `- *"What are our lowest quality datasets?"*\n`;
     yield `- *"Show me pipelines with recent SLA warnings"*\n`;
     yield `- *"Break down our cloud infrastructure costs"*\n`;
