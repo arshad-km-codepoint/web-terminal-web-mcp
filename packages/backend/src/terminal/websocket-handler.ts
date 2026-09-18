@@ -21,8 +21,14 @@ export function handleTerminalWebSocket(ws: WebSocket): void {
         type: 'exit',
         code,
       };
-      ws.send(JSON.stringify(message));
-      ws.close();
+      if (ws.readyState === undefined || ws.readyState === 1 /* OPEN */) {
+        try {
+          ws.send(JSON.stringify(message));
+          ws.close();
+        } catch (err) {
+          // Ignore if socket already closed
+        }
+      }
     }
   );
 

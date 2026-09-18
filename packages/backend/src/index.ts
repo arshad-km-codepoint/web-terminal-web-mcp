@@ -3,9 +3,11 @@ import cors from 'cors';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import { URL } from 'url';
+import 'dotenv/config';
 import { handleTerminalWebSocket } from './terminal/websocket-handler.js';
 import { handleSSEConnection, handleMCPMessage } from './mcp/mcp-server.js';
 import { handleMCPBridgeWebSocket } from './mcp/bridge-handler.js';
+import { handleChat } from './chat/chat-handler.js';
 
 export const app = express();
 const PORT = process.env.PORT || 3001;
@@ -16,6 +18,9 @@ app.use(express.json());
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Happy Coffee Backend Server' });
 });
+
+// AI Chatbot endpoint powered by DeepSeek API
+app.post('/api/chat', handleChat);
 
 // MCP over SSE — used by Claude Code and Gemini CLI
 app.get('/mcp/sse', handleSSEConnection);

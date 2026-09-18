@@ -26,7 +26,7 @@ function sendSSEMessage(sseRes: Response, data: unknown): void {
 // ------------------------------------------------------------------
 // Tool manifest (mirrors the browser-side tools in useCatalogTools.ts)
 // ------------------------------------------------------------------
-const TOOLS = [
+export const TOOLS = [
   {
     name: 'view_home_dashboard',
     description:

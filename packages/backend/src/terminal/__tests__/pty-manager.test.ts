@@ -87,4 +87,32 @@ describe('PTYManager', () => {
     manager.kill();
     expect(mockKill).toHaveBeenCalledTimes(1);
   });
+
+  it('clears ptyProcess on exit so subsequent kill() is a no-op', () => {
+    const onExit = vi.fn();
+    manager.spawn(() => {}, onExit);
+    expect(mockOnExit).toHaveBeenCalledTimes(1);
+    const exitCallback = mockOnExit.mock.calls[0][0];
+    exitCallback({ exitCode: 0 });
+    expect(onExit).toHaveBeenCalledWith(0);
+    manager.kill();
+    expect(mockKill).toHaveBeenCalledTimes(0);
+  });
+
+  it('catches and handles exceptions thrown by ptyProcess methods gracefully', () => {
+    mockWrite.mockImplementationOnce(() => {
+      throw new Error('write error');
+    });
+    mockResize.mockImplementationOnce(() => {
+      throw new Error('resize error');
+    });
+    mockKill.mockImplementationOnce(() => {
+      throw new Error('kill error');
+    });
+
+    manager.spawn(() => {}, () => {});
+    expect(() => manager.write('test')).not.toThrow();
+    expect(() => manager.resize({ cols: 80, rows: 24 })).not.toThrow();
+    expect(() => manager.kill()).not.toThrow();
+  });
 });

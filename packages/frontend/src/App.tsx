@@ -11,6 +11,7 @@ import { Costs } from './components/catalog/Costs';
 import { SearchResults } from './components/catalog/SearchResults';
 import { WebMCPIntegration } from './components/mcp/WebMCPIntegration';
 import { MCPBridgeClient } from './components/mcp/MCPBridgeClient';
+import { Chatbot } from './components/chat/Chatbot';
 
 function App() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
@@ -46,6 +47,7 @@ function App() {
             <Route path="/costs" element={<Costs />} />
           </Routes>
         </ContentShell>
+        <Chatbot />
       </div>
     </BrowserRouter>
   );

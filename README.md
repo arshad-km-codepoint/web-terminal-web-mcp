@@ -70,13 +70,12 @@ Browser                          Server                        OS
 
 - **Node.js** >= 18.0.0
 - **npm** (latest)
-- **macOS**, **Linux**, or **Windows** (WSL recommended)
-- Build tools for native compilation (`xcode-select --install` on macOS, `build-essential` on Linux)
+- **macOS**, **Linux**, or **Windows** (PowerShell, CMD, or WSL)
+- Build tools for native compilation (`xcode-select --install` on macOS, `build-essential` on Linux, Visual Studio Build Tools on Windows if building native addons from source)
 
 ### Install and run
 
 ```bash
-git clone https://github.com/hugozanini/web-terminal.git
 cd web-terminal
 npm install
 npm run dev

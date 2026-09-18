@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Database,
@@ -21,11 +21,19 @@ type AssetTab = 'all' | 'datasets' | 'sources' | 'pipelines';
 
 export function Home() {
   const { datasets, dataSources, pipelines, qualityChecks, costs } = useCatalogData();
-  const [search, setSearch] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
+  const qParam = searchParams.get('q') || '';
+  const [search, setSearch] = useState(qParam);
   const activeTab = (searchParams.get('tab') as AssetTab) || 'all';
   const navigate = useNavigate();
   useDocumentTitle('Home');
+
+  useEffect(() => {
+    const currentQ = searchParams.get('q');
+    if (currentQ !== null) {
+      setSearch(currentQ);
+    }
+  }, [searchParams]);
 
   const avgQuality = datasets.length
     ? (datasets.reduce((sum, d) => sum + d.qualityScore, 0) / datasets.length).toFixed(1)
@@ -66,8 +74,15 @@ export function Home() {
       }));
     }
 
-    return rows;
-  }, [activeTab, datasets, dataSources, pipelines]);
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) =>
+      r.name.toLowerCase().includes(q) ||
+      r.meta.toLowerCase().includes(q) ||
+      r.type.toLowerCase().includes(q)
+    );
+  }, [activeTab, datasets, dataSources, pipelines, search]);
+
 
   const typeIcons: Record<string, typeof Database> = {
     Dataset: Database, Source: Server, Pipeline: Play,

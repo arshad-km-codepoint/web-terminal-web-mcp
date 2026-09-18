@@ -137,6 +137,74 @@ export interface CostEntry {
   }[];
 }
 
+export type UserRole =
+  | 'Data Platform Admin'
+  | 'Data Steward'
+  | 'Data Engineer'
+  | 'Data Analyst'
+  | 'ML Engineer'
+  | 'Security & Compliance Officer';
+
+export type UserDepartment =
+  | 'Data Platform & Infrastructure'
+  | 'Analytics & Business Intelligence'
+  | 'Supply Chain & Sourcing'
+  | 'Roastery Operations & Quality'
+  | 'Finance & Commodity Trading'
+  | 'Governance & Security';
+
+export type UserStatus = 'Active' | 'Pending Review' | 'Suspended' | 'Offboarded';
+
+export type DataClearanceLevel =
+  | 'Public'
+  | 'Bronze (Raw)'
+  | 'Silver (Cleaned)'
+  | 'Gold (Aggregated)'
+  | 'Restricted / PII';
+
+export type EnvironmentAccess = 'Development' | 'Staging' | 'Production';
+
+export interface UserPreferences {
+  theme?: 'dark' | 'light' | 'system';
+  emailAlerts: boolean;
+  slackAlerts: boolean;
+  pagerDutyAlerts: boolean;
+  weeklySpendDigest: boolean;
+  dataQualityIncidentAlerts: boolean;
+  timezone: string;
+}
+
+export interface UserCompliance {
+  ndaSigned: boolean;
+  piiDataHandlingCertified: boolean;
+  soc2Acknowledged: boolean;
+  mfaMethod: 'TOTP' | 'Hardware Key (FIDO2)' | 'SMS OTP' | 'None';
+}
+
+export interface User {
+  id: string;
+  username: string;
+  fullName: string;
+  email: string;
+  phoneNumber?: string;
+  avatarUrl?: string;
+  jobTitle: string;
+  role: UserRole;
+  department: UserDepartment;
+  officeLocation: string;
+  managerName?: string;
+  status: UserStatus;
+  clearanceLevel: DataClearanceLevel;
+  accessibleEnvironments: EnvironmentAccess[];
+  authorizedWarehouses: string[];
+  preferences: UserPreferences;
+  compliance: UserCompliance;
+  assignedDatasetsCount?: number;
+  assignedPipelinesCount?: number;
+  createdAt: Date;
+  lastActiveAt: Date;
+}
+
 export interface CatalogData {
   datasets: Dataset[];
   dataSources: DataSource[];
@@ -145,4 +213,6 @@ export interface CatalogData {
   pipelineRuns: PipelineRun[];
   qualityChecks: QualityEntry[];
   costs: CostEntry[];
+  users: User[];
 }
+
